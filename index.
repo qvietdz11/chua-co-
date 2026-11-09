@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QR Tour – Chùa Cổ Lễ, Nam Định</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#fbf7ef;--card:#fff;--ink:#2b2118;--mut:#7a6a58;--acc:#b5471b;--acc2:#e8c27a;--line:#e6dccb;--road:#d9c9a8;--g:#e6efd9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1511;--card:#271f19;--ink:#f1e8da;--mut:#b5a692;--acc:#ec8a5a;--acc2:#7a5a24;--line:#3b3027;--road:#4a3d2d;--g:#2a3523}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:16px 16px 8px;max-width:760px;margin:auto}
+h1{margin:0;font-size:1.35rem;color:var(--acc)}header p{margin:2px 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;max-width:760px;margin:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;font:inherit;font-size:.9rem;cursor:pointer}
+nav button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{max-width:760px;margin:auto;padding:8px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+svg.map{width:100%;height:auto;background:var(--g);border-radius:14px;border:1px solid var(--line);display:block}
+.poi{cursor:pointer}.poi circle{fill:var(--acc);stroke:#fff;stroke-width:2}.poi.sel circle{fill:#1f7a4d;r:15}
+.poi text{font-size:11px;fill:var(--ink);paint-order:stroke;stroke:var(--g);stroke-width:3px;font-weight:600}
+.route{fill:none;stroke:#1f6fd6;stroke-width:5;stroke-dasharray:2 9;stroke-linecap:round;animation:d 1s linear infinite}
+@keyframes d{to{stroke-dashoffset:-22}}
+.btn{border:0;background:var(--acc);color:#fff;padding:10px 16px;border-radius:10px;font:inherit;cursor:pointer;margin:4px 6px 4px 0}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.tag{display:inline-block;font-size:.75rem;background:var(--acc2);color:var(--ink);padding:2px 10px;border-radius:99px}
+.item{display:flex;gap:12px;align-items:center;cursor:pointer}.item .ic{font-size:1.8rem}
+.item b{display:block}.item span{color:var(--mut);font-size:.88rem}
+ol.steps{padding-left:20px;margin:8px 0}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.qrgrid .card{text-align:center;margin:0}.qrbox{display:flex;justify-content:center;padding:8px;background:#fff;border-radius:8px;margin:6px 0}
+dialog{border:0;border-radius:16px;padding:0;max-width:560px;width:calc(100% - 24px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.5)}.dl{padding:18px;max-height:85vh;overflow:auto}
+.x{float:right;background:none;border:0;font-size:1.6rem;color:var(--mut);cursor:pointer}
+input[type=range]{vertical-align:middle;width:110px}
+.hide{display:none}.note{color:var(--mut);font-size:.82rem}
+@media print{nav,header,.noprint{display:none!important}}
+</style>
+</head>
+<body>
+<header><h1>⛩ QR Tour – Chùa Cổ Lễ</h1><p>Thiên Tải tự · Trực Ninh, Nam Định · Quét mã QR tại điểm tham quan để nghe thuyết minh</p></header>
+<nav id="tabs"></nav>
+<main>
+ <section id="t-map">
+  <div class="card noprint">📍 Bạn đang ở: <select id="start"></select>
+   <div class="note">Chạm vào một điểm trên bản đồ để xem giới thiệu và chỉ đường. Quét QR tại điểm nào, điểm đó sẽ là vị trí xuất phát.</div></div>
+  <svg id="map" class="map" viewBox="0 0 400 500" role="img" aria-label="Sơ đồ khuôn viên chùa Cổ Lễ"></svg>
+  <div id="route" class="card hide"></div>
+  <p class="note">Sơ đồ minh họa, không theo tỷ lệ thực.</p>
+ </section>
+ <section id="t-heritage" class="hide"></section>
+ <section id="t-food" class="hide"></section>
+ <section id="t-culture" class="hide"></section>
+ <section id="t-qr" class="hide">
+  <div class="card noprint">Mỗi điểm có một mã QR riêng. In ra và dán tại điểm tương ứng; khách quét sẽ mở thẳng trang giới thiệu và nghe thuyết minh.
+   <div><button class="btn" id="print">🖨 In tất cả mã QR</button></div></div>
+  <div id="qrgrid" class="qrgrid"></div>
+ </section>
+</main>
+<dialog id="dlg"><div class="dl" id="dlgBody"></div></dialog>
+
+<script>
+/* ====== DỮ LIỆU – chỉnh sửa nội dung & tọa độ tại đây ====== */
+const POIS=[
+{id:"cong-tam-quan",n:"Cổng Tam quan",c:"heritage",i:"🏯",x:200,y:440,s:"Lối vào chính của quần thể chùa.",
+ t:"Chào mừng quý khách đến với chùa Cổ Lễ, tên chữ là Thiên Tải tự, thuộc thị trấn Cổ Lễ, huyện Trực Ninh, tỉnh Nam Định. Từ cổng Tam quan, quý khách đi thẳng theo trục chính vào trong để tới khu chùa và tháp. Nhà vệ sinh và bãi xe nằm ở phía ngoài cổng."},
+{id:"bai-xe",n:"Bãi xe & dịch vụ",c:"service",i:"🅿️",x:320,y:455,s:"Gửi xe, nhà vệ sinh, quầy thông tin.",
+ t:"Đây là bãi xe và khu dịch vụ dành cho du khách. Quý khách có thể gửi xe, nghỉ chân và hỏi thông tin tại quầy hướng dẫn."},
+{id:"khu-am-thuc",n:"Khu ẩm thực & quà lưu niệm",c:"food",i:"🍜",x:80,y:430,s:"Đặc sản Nam Định cho du khách.",
+ t:"Khu ẩm thực gần cổng chùa phục vụ nhiều đặc sản của vùng Nam Định như phở bò, nem nắm, gỏi nhệch Giao Thủy, bánh xíu páo và kẹo sìu châu. Quý khách nên thưởng thức sau khi tham quan để thong thả đi lễ."},
+{id:"gac-chuong",n:"Gác chuông",c:"heritage",i:"🔔",x:90,y:320,s:"Nơi đặt chuông lớn của chùa.",
+ t:"Gác chuông là nơi treo chuông đồng của chùa. Tiếng chuông gắn với nhịp sinh hoạt tâm linh của quần thể, đặc biệt trong những ngày lễ hội lớn."},
+{id:"ho-sen",n:"Vườn cảnh & hồ sen",c:"scenic",i:"🪷",x:310,y:350,s:"Không gian thư giãn, chụp ảnh.",
+ t:"Khu vườn cảnh và hồ sen là nơi quý khách có thể nghỉ chân, ngắm cảnh và chụp ảnh. Hình ảnh hoa sen cũng gần gũi với biểu tượng Cửu phẩm liên hoa của ngọn tháp phía trong."},
+{id:"chua-chinh",n:"Chùa Cổ Lễ – Điện thờ Thánh Minh Không",c:"heritage",i:"🛕",x:200,y:260,s:"Công trình chính, thờ Thiền sư Nguyễn Minh Không.",
+ t:"Chùa Cổ Lễ, tên chữ là Thiên Tải tự, gắn với Thiền sư Nguyễn Minh Không, vị quốc sư thời nhà Lý, người được nhân dân tôn kính là Thánh Minh Không. Nơi đây là trung tâm tín ngưỡng của vùng đồng bằng sông Hồng. Quý khách vui lòng ăn mặc trang nhã, giữ yên lặng và đi nhẹ khi vào khu điện thờ."},
+{id:"thap-cuu-pham",n:"Tháp Cửu Phẩm Liên Hoa",c:"heritage",i:"🗼",x:200,y:110,s:"Ngọn tháp nhiều tầng, biểu tượng của quần thể.",
+ t:"Tháp Cửu Phẩm Liên Hoa là công trình nổi bật nhất của quần thể chùa Cổ Lễ, được xây dựng trong thời hiện đại và là một trong những ngọn tháp cao nhất Việt Nam. Tên gọi Cửu phẩm liên hoa xuất phát từ quan niệm Phật giáo Tịnh độ về chín phẩm sen, tượng trưng cho chín cấp bậc vãng sinh về cõi Cực lạc. Hình ảnh đài sen vì thế trở thành ý tưởng chủ đạo trong thiết kế ngọn tháp. Từ trên cao, quý khách có thể ngắm toàn cảnh khuôn viên chùa và làng quê Trực Ninh."},
+{id:"san-hoi",n:"Sân hội & không gian văn hóa",c:"culture",i:"🎎",x:90,y:190,s:"Nơi diễn ra lễ hội chùa Cổ Lễ.",
+ t:"Đây là không gian diễn ra hội chùa Cổ Lễ, thường được tổ chức vào khoảng giữa tháng Tám âm lịch để tưởng nhớ Thánh Minh Không. Hội có phần lễ trang nghiêm cùng các hoạt động văn hóa dân gian như rước kiệu, hát văn và chèo, thu hút đông đảo du khách và người dân địa phương."},
+{id:"nha-to",n:"Nhà Tổ & khu tưởng niệm",c:"culture",i:"🏮",x:310,y:200,s:"Không gian tưởng niệm, giá trị văn hóa tâm linh.",
+ t:"Khu nhà Tổ và không gian tưởng niệm là nơi nhân dân dâng hương bày tỏ lòng biết ơn. Truyền thống uống nước nhớ nguồn của người Việt thể hiện rõ nét ở nơi đây."}
+];
+const CATS={heritage:"Di tích",scenic:"Danh lam",food:"Ẩm thực",culture:"Văn hóa",service:"Dịch vụ"};
+const TABS=[["map","🗺 Bản đồ"],["heritage","🏯 Di tích & cảnh đẹp"],["food","🍜 Ẩm thực"],["culture","🎎 Văn hóa"],["qr","▦ Mã QR"]];
+const HUB_X=200;
+const $=s=>document.querySelector(s);
+const byId=id=>POIS.find(p=>p.id===id);
+let state={start:"cong-tam-quan",cur:null,speaking:false,rate:0.95};
+
+/* ====== TAB ====== */
+function showTab(k){
+ TABS.forEach(([t])=>$("#t-"+t).classList.toggle("hide",t!==k));
+ document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+ if(k==="qr")renderQR();
+}
+$("#tabs").innerHTML=TABS.map(([k,l])=>`<button data-k="${k}">${l}</button>`).join("");
+$("#tabs").onclick=e=>{const k=e.target.dataset.k;if(k)showTab(k)};
+
+/* ====== BẢN ĐỒ SVG ====== */
+function drawMap(){
+ let h=`<rect x="20" y="40" width="360" height="440" rx="18" fill="none" stroke="var(--road)" stroke-width="2" stroke-dasharray="6 6"/>
+ <text x="200" y="28" text-anchor="middle" font-size="12" fill="var(--mut)">▲ HƯỚNG VÀO TRONG</text>
+ <line x1="${HUB_X}" y1="100" x2="${HUB_X}" y2="450" stroke="var(--road)" stroke-width="12" stroke-linecap="round"/>`;
+ POIS.forEach(p=>{h+=`<line x1="${HUB_X}" y1="${p.y}" x2="${p.x}" y2="${p.y}" stroke="var(--road)" stroke-width="8" stroke-linecap="round"/>`});
+ h+=`<g id="routeG"></g>`;
+ POIS.forEach(p=>{
+  const a=p.x<HUB_X?"end":p.x>HUB_X?"start":"middle", dx=p.x<HUB_X?-18:p.x>HUB_X?18:0, dy=p.x===HUB_X?-20:4;
+  h+=`<g class="poi" data-id="${p.id}"><circle cx="${p.x}" cy="${p.y}" r="12"/><text x="${p.x}" y="${p.y+4}" text-anchor="middle" font-size="12" style="stroke:none;fill:#fff">${p.i}</text>
+  <text x="${p.x+dx}" y="${p.y+dy}" text-anchor="${a}">${p.n.length>22?p.n.slice(0,20)+"…":p.n}</text></g>`});
+ $("#map").innerHTML=h;
+}
+$("#map").onclick=e=>{const g=e.target.closest(".poi");if(g)openPoi(g.dataset.id)};
+
+/* ====== CHỈ ĐƯỜNG ====== */
+function route(fromId,toId){
+ const a=byId(fromId),b=byId(toId),pts=[[a.x,a.y]];
+ if(a.x!==HUB_X)pts.push([HUB_X,a.y]);
+ if(a.y!==b.y)pts.push([HUB_X,b.y]);
+ pts.push([b.x,b.y]);
+ const clean=pts.filter((p,i)=>i===0||p[0]!==pts[i-1][0]||p[1]!==pts[i-1][1]);
+ $("#routeG").innerHTML=`<polyline class="route" points="${clean.map(p=>p.join(",")).join(" ")}"/>`;
+ document.querySelectorAll(".poi").forEach(g=>g.classList.toggle("sel",g.dataset.id===toId));
+ const steps=[];
+ if(fromId===toId){steps.push("Bạn đang đứng ngay tại điểm này.")}
+ else{
+  let up=b.y<a.y?true:false;
+  if(a.x!==HUB_X){steps.push(`Từ ${a.n}, đi ra trục đường chính ở giữa khuôn viên.`)}
+  if(a.y!==b.y){steps.push(up?"Đi thẳng vào phía trong (hướng về tháp).":"Quay ra phía cổng chính, đi thẳng theo trục đường.")}
+  if(b.x!==HUB_X){
+   const left=b.x<HUB_X; const turn=(up?left:!left)?"trái":"phải";
+   steps.push(`Rẽ ${turn} theo lối nhỏ để tới ${b.n}.`);
+  }else steps.push(`${b.n} nằm ngay trên trục chính.`);
+  steps.push("Đã tới nơi. Chạm vào điểm để xem giới thiệu.");
+ }
+ const el=$("#route");el.classList.remove("hide");
+ el.innerHTML=`<b>🧭 Đường đi: ${a.n} → ${b.n}</b><ol class="steps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+ <button class="btn alt" id="spkRoute">🔊 Đọc hướng dẫn</button>`;
+ $("#spkRoute").onclick=()=>speak(steps.join(" "));
+}
+
+/* ====== CHI TIẾT ĐIỂM ====== */
+function openPoi(id,fromQR){
+ const p=byId(id);if(!p)return;
+ state.cur=id;
+ if(fromQR){state.start=id;$("#start").value=id}
+ stopSpeak();
+ $("#dlgBody").innerHTML=`<button class="x" id="cls" aria-label="Đóng">×</button>
+ <div style="font-size:2.2rem">${p.i}</div><h2 style="margin:4px 0">${p.n}</h2><span class="tag">${CATS[p.c]}</span>
+ <p>${p.t}</p>
+ <div class="noprint">
+  <button class="btn" id="play">🔊 Nghe thuyết minh</button><button class="btn alt" id="stop">⏹ Dừng</button>
+  <button class="btn alt" id="go">🧭 Chỉ đường đến đây</button>
+  <div class="note" style="margin-top:6px">Tốc độ đọc <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="${state.rate}"></div>
+  <div class="note" id="voiceMsg"></div></div>`;
+ const d=$("#dlg");if(!d.open)d.showModal();
+ $("#cls").onclick=()=>d.close();
+ $("#play").onclick=()=>speak(p.n+". "+p.t);
+ $("#stop").onclick=stopSpeak;
+ $("#rate").oninput=e=>{state.rate=+e.target.value};
+ $("#go").onclick=()=>{d.close();showTab("map");route($("#start").value,id);$("#map").scrollIntoView({behavior:"smooth"})};
+ try{history.replaceState(null,"","#"+id)}catch(e){}
+}
+$("#dlg").addEventListener("close",stopSpeak);
+
+/* ====== GIỌNG ĐỌC THUYẾT MINH ====== */
+function viVoice(){const v=(window.speechSynthesis&&speechSynthesis.getVoices())||[];return v.find(x=>/^vi/i.test(x.lang))||null}
+function speak(text){
+ if(!("speechSynthesis" in window)){alert("Thiết bị chưa hỗ trợ giọng đọc.");return}
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang="vi-VN";u.rate=state.rate;
+ const v=viVoice();if(v)u.voice=v;
+ const m=$("#voiceMsg");if(m&&!v)m.textContent="Thiết bị chưa có giọng tiếng Việt; hãy cài giọng “Tiếng Việt” trong cài đặt hệ thống để nghe rõ hơn.";
+ speechSynthesis.speak(u);
+}
+function stopSpeak(){try{speechSynthesis.cancel()}catch(e){}}
+if("speechSynthesis" in window)speechSynthesis.onvoiceschanged=()=>{};
+
+/* ====== DANH SÁCH THEO MỤC ====== */
+function list(cats,title,intro){
+ return `<div class="card"><b>${title}</b><div class="note">${intro}</div></div>`+
+ POIS.filter(p=>cats.includes(p.c)).map(p=>`<div class="card item" data-id="${p.id}"><div class="ic">${p.i}</div><div><b>${p.n}</b><span>${p.s}</span></div></div>`).join("");
+}
+function renderLists(){
+ $("#t-heritage").innerHTML=list(["heritage","scenic"],"Di tích lịch sử & danh lam thắng cảnh","Chạm vào từng điểm để xem nguồn gốc, ý nghĩa và nghe thuyết minh.");
+ $("#t-culture").innerHTML=list(["culture"],"Văn hóa & lễ hội địa phương","Hội chùa Cổ Lễ, hát văn, chèo và truyền thống tưởng niệm Thánh Minh Không.");
+ const dishes=[["🍜","Phở bò Nam Định","Nước dùng ngọt thanh, thịt bò mềm; một trong những món biểu tượng của Nam Định."],
+  ["🥢","Nem nắm Giao Thủy","Món nem chua đặc trưng, ăn kèm rau thơm và bánh đa."],
+  ["🦎","Gỏi nhệch Giao Thủy","Đặc sản vùng ven biển, thường dùng khi có khách."],
+  ["🍬","Kẹo sìu châu","Kẹo lạc, mè truyền thống, hợp làm quà."],
+  ["🥟","Bánh xíu páo","Bánh nhân thịt, nấm, trứng cút, món ăn vặt nổi tiếng."]];
+ $("#t-food").innerHTML=list(["food"],"Ẩm thực địa phương","Gợi ý món nên thử quanh khu vực chùa.")+
+  `<div class="card"><b>Món nên thử</b>`+dishes.map(d=>`<div class="item" style="margin-top:10px"><div class="ic">${d[0]}</div><div><b>${d[1]}</b><span>${d[2]}</span></div></div>`).join("")+`</div>`;
+}
+document.querySelector("main").addEventListener("click",e=>{const it=e.target.closest(".item[data-id]");if(it)openPoi(it.dataset.id)});
+
+/* ====== MÃ QR ====== */
+let qrDone=false;
+function baseUrl(){return location.href.split("#")[0]}
+function renderQR(){
+ if(qrDone)return;
+ const g=$("#qrgrid");g.innerHTML=POIS.map(p=>`<div class="card"><b>${p.i} ${p.n}</b><div class="qrbox" id="qr-${p.id}"></div><span class="note">${CATS[p.c]}</span></div>`).join("");
+ if(typeof QRCode==="undefined"){g.insertAdjacentHTML("afterbegin","<div class='card'>Không tải được thư viện QR. Vui lòng kiểm tra kết nối mạng.</div>");return}
+ POIS.forEach(p=>new QRCode($("#qr-"+p.id),{text:baseUrl()+"#"+p.id,width:150,height:150,correctLevel:QRCode.CorrectLevel.M}));
+ qrDone=true;
+}
+$("#print").onclick=()=>{try{window.print()}catch(e){}};
+
+/* ====== KHỞI TẠO ====== */
+$("#start").innerHTML=POIS.map(p=>`<option value="${p.id}">${p.n}</option>`).join("");
+$("#start").value=state.start;
+$("#start").onchange=e=>{state.start=e.target.value;if(state.cur)route(state.start,state.cur)};
+drawMap();renderLists();showTab("map");
+function fromHash(){const id=location.hash.slice(1);if(byId(id))openPoi(id,true)}
+addEventListener("hashchange",()=>{if(!$("#dlg").open)fromHash()});
+fromHash();
+</script>
+</body>
+</html>
